@@ -18,6 +18,12 @@ namespace spotify_api_top_console_app
 
         public static async Task Main()
         {
+            /*
+             * 
+             * This is the starting point for the console application
+             * CHANGE THE GLOBAL VARIABLES BEFORE USE ABOVE
+             * 
+             */
 
             int i = 0;
             Console.WriteLine("Starting..");
