@@ -7,6 +7,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <StartupObject>spotify_api_top_console_app.Program</StartupObject>
+ 	<ApplicationIcon>e1de8eb30f743c424e0d0484e8db1998.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
