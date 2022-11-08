@@ -6,13 +6,12 @@ namespace spotify_api_top_console_app
 {
     public class Program
     {
-        private static string? _oAuthCode;
         private static readonly string playlistId = "NEW_PLAYLIST_TOP20";
         private static readonly string originalPlaylistId = "ORIGINAL_PLAYLIST";
         private static readonly string clientId = "CLIENT_ID";
         private static readonly string apiSecret = "API_SECRET";
 
-        private static string[] songUris = new string[20];
+        private static List<string> songUris = new();
         public static SpotifyClient? spotifyClient;
         private static EmbedIOAuthServer? _server;
 
@@ -25,50 +24,45 @@ namespace spotify_api_top_console_app
              * 
              */
 
-            int i = 0;
             Console.WriteLine("Starting..");
             try
             {
                 // Create OAUth token so we can use API
-                CreateAuthAsync();
-                spotifyClient = new SpotifyClient(_oAuthCode);
-
-                // Get 20 newest songs from given playlist
-                var playlist = await GetPlaylistItemsAsync(originalPlaylistId);
-                Console.WriteLine($" {playlist.Count} Songs will be added \n These song will be added:");
-                Console.WriteLine("-------------------------");
-                foreach (var item in playlist)
+                if(await CreateAuthAsync())
                 {
-                    if (item.Track is FullTrack track)
+                    // Get 20 newest songs from given playlist
+                    var playlist = await GetPlaylistItemsAsync(originalPlaylistId);
+                    Console.WriteLine($" {playlist.Count} Songs will be added \n These song will be added:\n-------------------------");
+                    foreach (var item in playlist)
                     {
-                        // All FullTrack properties are available
-                        Console.WriteLine(track.Name);
-                        songUris[i++] = track.Uri;
+                        // Check if the track is music
+                        if (item.Track is FullTrack track)
+                        {
+                            Console.WriteLine($"{track.Name} from {track.Artists}");
+                            songUris.Add(track.Uri);
+                        }
+                        // Check if the track is not music
+                        if (item.Track is not FullTrack)
+                        {
+                            Console.WriteLine($"We encountered {item.Track.Type}: {item.Track} \n This WONT BE ADDED");
+                        }
                     }
-                    if (item.Track is FullEpisode episode)
+                    Console.WriteLine("-------------------------\nAdding the songs next..");
+
+                    // Lets add songs to already created spotify playlist
+                    if (!await AddSongsToPlaylistAsync(playlist))
                     {
-                        // All FullTrack properties are available
-                        Console.WriteLine($"We encountered an episode and not music track: {episode.Name} \n This WONT BE ADDED");
+                        Console.WriteLine($"*-** Something went from adding the songs **-*");
                     }
                 }
-                Console.WriteLine("-------------------------");
-                Console.WriteLine("Adding the songs next..");
-
-                // Lets add songs to already created spotify playlist
-                if (!await AddSongsToPlaylistAsync(playlist))
-                {
-                    Console.WriteLine($"*-** Something went from adding the songs **-*");
-                }
-
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Console.WriteLine($"ERROR: {e}");
             }
             finally
             {
-                Console.WriteLine("-------------------------");
-                Console.WriteLine("All Done \n Press any key to close");
+                Console.WriteLine("-------------------------\nAll Done \n Press any key to close");
                 Console.ReadKey();
             }
 
@@ -77,7 +71,7 @@ namespace spotify_api_top_console_app
         /// <summary>
         /// Create AuthToken and Auth the app
         /// </summary>
-        private static async void CreateAuthAsync()
+        private static async Task<bool> CreateAuthAsync()
         {
             _server = new EmbedIOAuthServer(new Uri("http://localhost:5000/callback"), 5000);
             await _server.Start();
@@ -89,19 +83,24 @@ namespace spotify_api_top_console_app
             {
                 Scope = new List<string> { Scopes.UserReadEmail, Scopes.PlaylistModifyPublic, Scopes.PlaylistModifyPrivate }
             };
+
+            // Open browser window for authentication of the spotify account
             try
             {
                 BrowserUtil.Open(request.ToUri());
                 Console.ReadKey();
+                return true;
             }
             catch (Exception)
             {
                 Console.WriteLine("Unable to open URL, manually open: {0}", request.ToUri());
+                return false; 
             }
+
         }
         private static async Task OnAuthorizationCodeReceived(object sender, AuthorizationCodeResponse response)
         {
-            await _server.Stop();
+            await _server!.Stop();
 
             var config = SpotifyClientConfig.CreateDefault();
             var tokenResponse = await new OAuthClient(config).RequestToken(
@@ -110,13 +109,13 @@ namespace spotify_api_top_console_app
               )
             );
 
-            _oAuthCode = tokenResponse.AccessToken;
+            spotifyClient = new SpotifyClient(tokenResponse.AccessToken);
             Console.WriteLine("------------------------- \n OAuth DONE Press a key to continue \n-------------------------");
         }
         private static async Task OnErrorReceived(object sender, string error, string? state)
         {
             Console.WriteLine($"Aborting authorization, error received: {error}");
-            await _server.Stop();
+            await _server!.Stop();
         }
 
         /// <summary>
@@ -125,11 +124,11 @@ namespace spotify_api_top_console_app
         /// <returns>Playlist class with 20 recently added songs</returns>
         private static async Task<List<PlaylistTrack<IPlayableItem>>> GetPlaylistItemsAsync(string playlistId)
         {
-            var totalSongs = await spotifyClient.Playlists.GetItems(playlistId);
-            var offset = totalSongs.Total.Value - 20;
+            var totalSongs = await spotifyClient!.Playlists.GetItems(playlistId);
+            var offset = totalSongs.Total!.Value - 20;
 
             var playlist = await spotifyClient.Playlists.GetItems(playlistId, new PlaylistGetItemsRequest() { Offset = offset, Limit = 20 });
-            return playlist.Items;
+            return playlist.Items!;
         }
 
 
@@ -141,7 +140,7 @@ namespace spotify_api_top_console_app
         private static async Task<bool> AddSongsToPlaylistAsync(List<PlaylistTrack<IPlayableItem>> playlist)
         {
             // Check if TOP20 playlist has songs already
-            var totalSongs = await spotifyClient.Playlists.GetItems(playlistId);
+            var totalSongs = await spotifyClient!.Playlists.GetItems(playlistId);
 
             // Delete songs from TOP20 playlist if any
             if (totalSongs.Total > 0)
@@ -207,7 +206,7 @@ namespace spotify_api_top_console_app
             }
 
             playlistRemoveItemsRequest.Tracks = tempList;
-            var resp = await spotifyClient.Playlists.RemoveItems(playlistId, playlistRemoveItemsRequest);
+            var resp = await spotifyClient!.Playlists.RemoveItems(playlistId, playlistRemoveItemsRequest);
             if (resp != null)
             {
                 Console.WriteLine("Just deleted all songs from TOP20 playlist..");
@@ -235,7 +234,7 @@ namespace spotify_api_top_console_app
             top = normalList;
 
             var request = new PlaylistAddItemsRequest(top);
-            return await spotifyClient.Playlists.AddItems(playlistId, request);
+            return await spotifyClient!.Playlists.AddItems(playlistId, request);
 
         }
     }
