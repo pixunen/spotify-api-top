@@ -6,10 +6,10 @@ namespace spotify_api_top_console_app
 {
     public class Program
     {
-        private static readonly string playlistId = "NEW_PLAYLIST_TOP20";
-        private static readonly string originalPlaylistId = "ORIGINAL_PLAYLIST";
-        private static readonly string clientId = "CLIENT_ID";
-        private static readonly string apiSecret = "API_SECRET";
+        private static readonly string playlistId = "NEW_PLAYLIST_TOP20"; // Can be aquired from spotify developer console
+        private static readonly string originalPlaylistId = "ORIGINAL_PLAYLIST"; // Can be aquired from spotify developer console
+        private static readonly string clientId = "CLIENT_ID"; // From spotify developer dashboard
+        private static readonly string apiSecret = "API_SECRET"; // From spotify developer dashboard
 
         private static List<string> songUris = new();
         public static SpotifyClient? spotifyClient;
@@ -31,29 +31,58 @@ namespace spotify_api_top_console_app
                 if(await CreateAuthAsync())
                 {
                     // Get 20 newest songs from given playlist
+                    Console.Clear();
                     var playlist = await GetPlaylistItemsAsync(originalPlaylistId);
-                    Console.WriteLine($" {playlist.Count} Songs will be added \n These song will be added:\n-------------------------");
+                    Console.WriteLine($"{playlist.Count} songs will be added..");
+                    Thread.Sleep(1000);
+                    Console.WriteLine($"List of songs:\n-------------------------");
                     foreach (var item in playlist)
                     {
                         // Check if the track is music
                         if (item.Track is FullTrack track)
                         {
                             Console.WriteLine($"{track.Name}");
+                            Thread.Sleep(50);
                             songUris.Add(track.Uri);
                         }
                         // Check if the track is not music
                         if (item.Track is not FullTrack)
                         {
-                            Console.WriteLine($"We encountered {item.Track.Type}: {item.Track} \n This WONT BE ADDED");
+                            Console.WriteLine($"We encountered {item.Track.Type}: {item.Track} \nThis WONT BE ADDED");
                         }
                     }
-                    Thread.Sleep(1000);
-                    Console.WriteLine("-------------------------\nAdding the songs next..");
 
-                    // Lets add songs to already created spotify playlist
-                    if (!await AddSongsToPlaylistAsync(playlist))
+                    int number = 0;
+                    while (number != 1 || number != 2)
                     {
-                        Console.WriteLine($"*-** Something went from adding the songs **-*");
+                        Console.WriteLine("-------------------------\nSelect option:");
+                        Console.WriteLine("1 - Continue to add the songs\n2 - Abort execution");
+                        var input = Console.ReadKey();
+                        Console.WriteLine();
+                        if (int.TryParse(input.KeyChar.ToString(), out number))
+                        {
+                            switch (number)
+                            {
+                                case 1:
+                                    Console.Clear();
+                                    Console.WriteLine("-------------------------\nAdding the songs next..");
+                                    Thread.Sleep(2000);
+                                    // Lets add songs to already created spotify playlist
+                                    if (!await AddSongsToPlaylistAsync(playlist))
+                                    {
+                                        Console.WriteLine($"*-** Something went from adding the songs **-*");
+                                    }
+                                    return;
+                                case 2:
+                                    Console.WriteLine("Aborting execution..");
+                                    Thread.Sleep(1000);
+                                    Console.Clear();
+                                    return;
+                                default:
+                                    Console.WriteLine("Invalid input");
+                                    break;
+                            }
+                        }
                     }
                 }
             }
@@ -63,12 +92,13 @@ namespace spotify_api_top_console_app
             }
             finally
             {
-                Console.WriteLine("-------------------------\nAll Done \n Press any key to close");
+                Console.WriteLine("All Done. Press any key to close.");
                 Console.ReadKey();
             }
 
         }
 
+        #region Auth
         /// <summary>
         /// Create AuthToken and Auth the app
         /// </summary>
@@ -95,7 +125,7 @@ namespace spotify_api_top_console_app
             catch (Exception)
             {
                 Console.WriteLine("Unable to open URL, manually open: {0}", request.ToUri());
-                return false; 
+                return false;
             }
 
         }
@@ -111,6 +141,7 @@ namespace spotify_api_top_console_app
             );
 
             spotifyClient = new SpotifyClient(tokenResponse.AccessToken);
+            Console.Clear();
             Console.WriteLine("------------------------- \n OAuth DONE Press a key to continue \n-------------------------");
         }
         private static async Task OnErrorReceived(object sender, string error, string? state)
@@ -118,7 +149,9 @@ namespace spotify_api_top_console_app
             Console.WriteLine($"Aborting authorization, error received: {error}");
             await _server!.Stop();
         }
+        #endregion
 
+        #region Playlist manupilation
         /// <summary>
         /// Main method to fetch playlist and 20 recently added songs from that
         /// </summary>
@@ -239,5 +272,6 @@ namespace spotify_api_top_console_app
             return await spotifyClient!.Playlists.AddItems(playlistId, request);
 
         }
+        #endregion
     }
 }
