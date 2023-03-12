@@ -47,6 +47,7 @@ namespace spotify_api_top_console_app
                             Console.WriteLine($"We encountered {item.Track.Type}: {item.Track} \n This WONT BE ADDED");
                         }
                     }
+                    Thread.Sleep(1000);
                     Console.WriteLine("-------------------------\nAdding the songs next..");
 
                     // Lets add songs to already created spotify playlist
@@ -146,7 +147,7 @@ namespace spotify_api_top_console_app
             if (totalSongs.Total > 0)
             {
                 Console.WriteLine("Found old songs in TOP20 playlist.. COMMENCING DELETE");
-
+                Thread.Sleep(500);
                 if (await CreateHttpDeleteAsync())
                 {
                     // When TOP20 is empty add the new songs to it
@@ -168,6 +169,7 @@ namespace spotify_api_top_console_app
             else
             {
                 // Add songs to TOP20 playlist
+                Thread.Sleep(500);
                 var done = await AddSongsAsync();
                 if (done != null)
                 {
