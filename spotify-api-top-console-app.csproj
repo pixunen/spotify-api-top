@@ -8,7 +8,12 @@
     <Nullable>enable</Nullable>
     <StartupObject>spotify_api_top_console_app.Program</StartupObject>
     <ApplicationIcon>spotify-icon-png-15404-Windows.ico</ApplicationIcon>
+    <AssemblyName>spotify-top</AssemblyName>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="spotify-icon-png-15404-Windows.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />

@@ -38,7 +38,7 @@ namespace spotify_api_top_console_app
                         // Check if the track is music
                         if (item.Track is FullTrack track)
                         {
-                            Console.WriteLine($"{track.Name} from {track.Artists}");
+                            Console.WriteLine($"{track.Name}");
                             songUris.Add(track.Uri);
                         }
                         // Check if the track is not music
