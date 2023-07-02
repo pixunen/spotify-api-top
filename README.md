@@ -2,15 +2,22 @@
 
 Using spotify API to create TOP20 song playlis out of massive original playlist
 
-## How to use
+## How to use the .exe
 
-To use the console application just change the global variables with correct values from spotify API console. Remember to add http://localhost:5000/callback to callback server in the spotify API console.
+Download the .exe from the Releases tab and launch it. After booting up, new browser window open and requires the user to authenticate with their spotify account.
+After that the user needs to provide the source playlist name and the target playlist name. Finally the app adds the 20 latest songs from source to target.
+
+## How to use the source code
+
+If you don't download the release .exe then follow these instructions to use this with your own Spotify API.
+To use the console application just change the SpotifyAPIClient constructor values with correct values from spotify API console. Remember to add http://localhost:5000/callback to callback server in the spotify API console.
 
 ```cs
-private static readonly string playlistId = "NEW_PLAYLIST_TOP20";
-private static readonly string originalPlaylistId = "ORIGINAL_PLAYLIST";
-private static readonly string clientId = "CLIENT_ID";
-private static readonly string apiSecret = "API_SECRET";
+public SpotifyAPIClient() 
+{
+    _clientId = "CLIENT ID";
+    _apiSecret = "CLIENT SECRET";
+}
 ```
 
 
