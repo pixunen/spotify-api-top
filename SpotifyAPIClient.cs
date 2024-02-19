@@ -5,18 +5,19 @@ namespace spotify_api_top_console_app
 {
     internal class SpotifyAPIClient
     {
+        private readonly string _callbackUri = "http://localhost:6001/callback";
         private SimplePlaylist? _sourcePlaylist;
         private SimplePlaylist? _targetPlaylist;
         private readonly string _clientId; // From spotify developer dashboard
         private readonly string _apiSecret; // From spotify developer dashboard
-        private List<string> songUris = new();
-        private SpotifyClient? spotifyClient;
+        private readonly List<string> songUris = new();
+        private SpotifyClient spotifyClient;
         private EmbedIOAuthServer? _server;
 
         public SpotifyAPIClient() 
         {
-            _clientId = "CLIENT ID";
-            _apiSecret = "CLIENT SECRET";
+            _clientId = "";
+            _apiSecret = "";
         }
 
         public async Task<bool> ProcessPlaylists()
@@ -128,7 +129,7 @@ namespace spotify_api_top_console_app
         /// </summary>
         public async Task<bool> CreateAuthAsync()
         {
-            _server = new EmbedIOAuthServer(new Uri("http://localhost:5000/callback"), 5000);
+            _server = new EmbedIOAuthServer(new Uri(_callbackUri), 6001);
             await _server.Start();
 
             _server.AuthorizationCodeReceived += OnAuthorizationCodeReceived;
@@ -160,7 +161,7 @@ namespace spotify_api_top_console_app
             var config = SpotifyClientConfig.CreateDefault();
             var tokenResponse = await new OAuthClient(config).RequestToken(
               new AuthorizationCodeTokenRequest(
-                _clientId, _apiSecret, response.Code, new Uri("http://localhost:5000/callback")
+                _clientId, _apiSecret, response.Code, new Uri(_callbackUri)
               )
             );
 
