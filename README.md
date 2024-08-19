@@ -23,10 +23,10 @@ public SpotifyAPIClient()
 ## Example
 
 When run the console app requires the 5000 port to be open. Then it asks the user to login with their spotify account
-![](https://github.com/spotify-api-top/spotify-top-20-1.gif)
+![](https://github.com/pixunen/spotify-api-top/blob/master/spotify-top-20-1.gif)
 
 Then user selects the source and target playlist and can choose to abort if the songs are not to their liking
-![](https://github.com/spotify-api-top/spotify-top-20-2.gif)
+![](https://github.com/pixunen/spotify-api-top/blob/master/spotify-top-20-2.gif)
 
 
 ## Feedback
