@@ -1,41 +1,35 @@
-﻿namespace spotify_api_top_console_app
+﻿using SpotifyApiTopConsoleApp.Services;
+
+namespace SpotifyApiTopConsoleApp
 {
     public class Program
     {
         public static async Task Main()
         {
-            /*
-             * 
-             * This is the starting point for the console application
-             * 
-             */
-
             try
             {
                 BootUpSequence();
-                var spotifyAPIClient = new SpotifyAPIClient();
 
-                // Create OAUth token so we can use API
-                if (await spotifyAPIClient.CreateAuthAsync() && await spotifyAPIClient.ProcessPlaylists())
+                var config = SecretAppsettingReader.ReadSection();
+                var authService = new SpotifyAuthService(config.ClientId, config.ApiSecret, config.CallbackUri);
+                var spotifyClient = await authService.AuthenticateAsync();
+
+                var spotifyAPIClient = new SpotifyAPIClient(spotifyClient);
+
+                if (await spotifyAPIClient.ProcessPlaylists())
                 {
-                    // Get 20 newest songs from given playlist
-                    Thread.Sleep(200);
-                    Console.Clear();
-
                     await spotifyAPIClient.ProcessSongsToPlaylists();
                 }
             }
             catch (Exception e)
             {
-                Console.WriteLine($"ERROR: {e}");
+                Console.WriteLine($"ERROR: {e.Message}");
             }
             finally
             {
                 Console.WriteLine("All Done. Press any key to close.");
                 Console.ReadKey();
             }
-
-
         }
 
         private static void BootUpSequence()

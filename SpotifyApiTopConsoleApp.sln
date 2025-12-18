@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32519.379
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "spotify-api-top-console-app", "spotify-api-top-console-app.csproj", "{234F87A1-67A4-4990-A679-34BE94645782}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpotifyApiTopConsoleApp", "SpotifyApiTopConsoleApp.csproj", "{234F87A1-67A4-4990-A679-34BE94645782}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
